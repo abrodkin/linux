@@ -62,6 +62,7 @@ obj-$(CONFIG_MACH_COLIBRI)	+= colibri-pxa270.o
 obj-$(CONFIG_MACH_COLIBRI300)	+= colibri-pxa3xx.o colibri-pxa300.o
 obj-$(CONFIG_MACH_COLIBRI320)	+= colibri-pxa3xx.o colibri-pxa320.o
 obj-$(CONFIG_MACH_VPAC270)	+= vpac270.o
+obj-$(CONFIG_MACH_TION270)	+= tion270.o
 
 # End-user Products
 obj-$(CONFIG_MACH_H4700)	+= hx4700.o

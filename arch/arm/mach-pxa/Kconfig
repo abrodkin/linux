@@ -394,6 +394,10 @@ config MACH_PALMLD
 	  Say Y here if you intend to run this kernel on a Palm LifeDrive
 	  handheld computer.
 
+config MACH_TION270
+	bool "Tion270"
+	select PXA27x
+
 config PALM_TREO
 	bool
 	depends on ARCH_PXA_PALM
