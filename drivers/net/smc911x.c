@@ -170,7 +170,7 @@ static void PRINT_PKT(u_char *buf, int length)
 /*
  * this does a soft reset on the device
  */
-static void smc911x_reset(struct net_device *dev)
+static int smc911x_reset(struct net_device *dev)
 {
 	struct smc911x_local *lp = netdev_priv(dev);
 	unsigned int reg, timeout=0, resets=1, irq_cfg;
@@ -189,7 +189,7 @@ static void smc911x_reset(struct net_device *dev)
 		} while (--timeout && !reg);
 		if (timeout == 0) {
 			PRINTK("%s: smc911x_reset timeout waiting for PM restore\n", dev->name);
-			return;
+			return -EAGAIN;
 		}
 	}
 
@@ -214,7 +214,20 @@ static void smc911x_reset(struct net_device *dev)
 	}
 	if (timeout == 0) {
 		PRINTK("%s: smc911x_reset timeout waiting for reset\n", dev->name);
-		return;
+		return -EAGAIN;
+	}
+
+	/* Wait for device ready */
+	if ((SMC_GET_PMT_CTRL(lp) & PMT_CTRL_READY_) == 0) {
+		timeout = 30;		/* ~250 ms */
+		do {
+			mdelay(10);
+			reg = SMC_GET_PMT_CTRL(lp) & PMT_CTRL_READY_;
+		} while ( --timeout && !reg);
+		if (timeout == 0) {
+			PRINTK("%s: %s timeout waiting after soft reset\n", dev->name, __func__);
+			return -EAGAIN;
+		}
 	}
 
 	/* make sure EEPROM has finished loading before setting GPIO_CFG */
@@ -224,7 +237,7 @@ static void smc911x_reset(struct net_device *dev)
 
 	if (timeout == 0){
 		PRINTK("%s: smc911x_reset timeout waiting for EEPROM busy\n", dev->name);
-		return;
+		return -EAGAIN;
 	}
 
 	/* Initialize interrupts */
@@ -259,6 +272,8 @@ static void smc911x_reset(struct net_device *dev)
 		dev->stats.tx_errors++;
 		dev->stats.tx_aborted_errors++;
 	}
+
+	return 0;
 }
 
 /*
@@ -1416,7 +1431,8 @@ smc911x_open(struct net_device *dev)
 	}
 
 	/* reset the hardware */
-	smc911x_reset(dev);
+	if (smc911x_reset(dev))
+		return -EAGAIN;
 
 	/* Configure the PHY, initialize the link state */
 	smc911x_phy_configure(&lp->phy_configure);
@@ -1609,13 +1625,14 @@ static int smc911x_ethtool_wait_eeprom_ready(struct net_device *dev)
 	int e2p_cmd;
 
 	e2p_cmd = SMC_GET_E2P_CMD(lp);
-	for(timeout=10;(e2p_cmd & E2P_CMD_EPC_BUSY_) && timeout; timeout--) {
+	SMC_SET_E2P_CMD(lp, E2P_CMD_EPC_TIMEOUT_);	/* Clear old timeout */
+	for(timeout=30;(e2p_cmd & E2P_CMD_EPC_BUSY_) && timeout; timeout--) {
+		mdelay(1);
 		if (e2p_cmd & E2P_CMD_EPC_TIMEOUT_) {
 			PRINTK("%s: %s timeout waiting for EEPROM to respond\n",
 				dev->name, __func__);
 			return -EFAULT;
 		}
-		mdelay(1);
 		e2p_cmd = SMC_GET_E2P_CMD(lp);
 	}
 	if (timeout == 0) {
@@ -1706,19 +1723,44 @@ static int smc911x_ethtool_geteeprom_len(struct net_device *dev)
 	 return SMC911X_EEPROM_LEN;
 }
 
+static int smc911x_ethtool_phys_id(struct net_device *dev, u32 sec)
+{
+	int orig, r, i;
+#if 0
+	/* unsigned long ioaddr = dev->base_addr; */
+#endif
+	struct smc911x_local *lp = netdev_priv(dev);
+
+	/* Blink the LED1 (speed) and LED2 (link) */
+	orig = SMC_GET_GPIO_CFG(lp);
+	r = (1<<9 | 1<<8); 	/* GPIO output */
+	SMC_SET_GPIO_CFG(lp, r);
+
+	for (i = 0; i < 2*sec + 1; i++) {
+		SMC_SET_GPIO_CFG(lp, r | 1);	/* LED1 */
+		msleep(250);
+		SMC_SET_GPIO_CFG(lp, r | 2);	/* LED2 */
+		msleep(250);
+	}
+
+	SMC_SET_GPIO_CFG(lp, orig);
+	return 0;
+}
+
 static const struct ethtool_ops smc911x_ethtool_ops = {
-	.get_settings	 = smc911x_ethtool_getsettings,
-	.set_settings	 = smc911x_ethtool_setsettings,
-	.get_drvinfo	 = smc911x_ethtool_getdrvinfo,
-	.get_msglevel	 = smc911x_ethtool_getmsglevel,
-	.set_msglevel	 = smc911x_ethtool_setmsglevel,
-	.nway_reset = smc911x_ethtool_nwayreset,
-	.get_link	 = ethtool_op_get_link,
-	.get_regs_len	 = smc911x_ethtool_getregslen,
-	.get_regs	 = smc911x_ethtool_getregs,
-	.get_eeprom_len = smc911x_ethtool_geteeprom_len,
-	.get_eeprom = smc911x_ethtool_geteeprom,
-	.set_eeprom = smc911x_ethtool_seteeprom,
+	.get_settings	= smc911x_ethtool_getsettings,
+	.set_settings	= smc911x_ethtool_setsettings,
+	.get_drvinfo	= smc911x_ethtool_getdrvinfo,
+	.get_msglevel	= smc911x_ethtool_getmsglevel,
+	.set_msglevel	= smc911x_ethtool_setmsglevel,
+	.nway_reset	= smc911x_ethtool_nwayreset,
+	.get_link	= ethtool_op_get_link,
+	.get_regs_len	= smc911x_ethtool_getregslen,
+	.get_regs	= smc911x_ethtool_getregs,
+	.get_eeprom_len	= smc911x_ethtool_geteeprom_len,
+	.get_eeprom	= smc911x_ethtool_geteeprom,
+	.set_eeprom	= smc911x_ethtool_seteeprom,
+	.phys_id	= smc911x_ethtool_phys_id,
 };
 
 /*
@@ -1749,7 +1791,7 @@ static int __devinit smc911x_findirq(struct net_device *dev)
 	do {
 		int int_status;
 		udelay(10);
-		int_status = SMC_GET_INT_EN(lp);
+		int_status = SMC_GET_INT(lp);
 		if (int_status & INT_EN_SW_INT_EN_)
 			 break;		/* got the interrupt */
 	} while (--timeout);
@@ -2077,7 +2119,8 @@ static int __devinit smc911x_drv_probe(struct platform_device *pdev)
 	SET_NETDEV_DEV(ndev, &pdev->dev);
 
 	ndev->dma = (unsigned char)-1;
-	ndev->irq = platform_get_irq(pdev, 0);
+	ret = platform_get_irq(pdev, 0);
+	ndev->irq = (ret < 0) ? 0 : ret;	/* Auto detect if none */
 	lp = netdev_priv(ndev);
 	lp->netdev = ndev;
 #ifdef SMC_DYNAMIC_BUS_CONFIG
@@ -2180,10 +2223,11 @@ static int smc911x_drv_resume(struct platform_device *dev)
 		struct smc911x_local *lp = netdev_priv(ndev);
 
 		if (netif_running(ndev)) {
-			smc911x_reset(ndev);
+			if (smc911x_reset(ndev))
+				return -EAGAIN;
+			smc911x_enable(ndev);
 			if (lp->phy_type != 0)
 				smc911x_phy_configure(&lp->phy_configure);
-			smc911x_enable(ndev);
 			netif_device_attach(ndev);
 		}
 	}
