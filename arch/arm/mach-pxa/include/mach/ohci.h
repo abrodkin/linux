@@ -29,6 +29,7 @@ struct pxaohci_platform_data {
 #define PMM_PERPORT_MODE       3
 
 	int power_budget;
+	int (*data)(struct device *, int, int, unsigned long int);
 };
 
 extern void pxa_set_ohci_info(struct pxaohci_platform_data *info);

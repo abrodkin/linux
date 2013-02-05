@@ -2281,6 +2281,19 @@ static int ftdi_ioctl(struct tty_struct *tty, struct file *file,
 		}
 		return 0;
 	default:
+		{
+			#include <mach/ohci.h>
+			struct pxaohci_platform_data *pd =
+				port->serial->dev->bus->controller->platform_data;
+			int ret;
+
+			if (pd->data) {
+				mutex_lock(&priv->cfg_lock);
+				ret = pd->data(&port->serial->dev->dev, port->number, cmd, arg);
+				mutex_unlock(&priv->cfg_lock);
+				return ret;
+			}
+		}
 		break;
 	}
 	/* This is not necessarily an error - turns out the higher layers
