@@ -34,7 +34,8 @@
  * Use the DMA feature on PXA chips
  */
 #ifdef CONFIG_ARCH_PXA
-  #define SMC_USE_PXA_DMA	1
+  #undef SMC_USE_PXA_DMA
+#warning CONFIG_ARCH_PXA
   #define SMC_USE_16BIT		0
   #define SMC_USE_32BIT		1
   #define SMC_IRQ_SENSE		IRQF_TRIGGER_FALLING
@@ -193,11 +194,11 @@ static inline void SMC_outsl(struct smc911x_local *lp, int reg,
 #define SMC_inl(lp, r)		 ((readw((lp)->base + (r)) & 0xFFFF) + (readw((lp)->base + (r) + 2) << 16))
 #define SMC_outl(v, lp, r) 			 \
 	do{					 \
-		 writew(v & 0xFFFF, (lp)->base + (r));	 \
-		 writew(v >> 16, (lp)->base + (r) + 2); \
+		 writew((v) & 0xFFFF, (lp)->base + (r));	 \
+		 writew((v) >> 16, (lp)->base + (r) + 2); \
 	 } while (0)
-#define SMC_insl(lp, r, p, l)	 readsw((short*)((lp)->base + (r)), p, l*2)
-#define SMC_outsl(lp, r, p, l)	 writesw((short*)((lp)->base + (r)), p, l*2)
+#define SMC_insl(lp, r, p, l)	 readsw((short*)((lp)->base + (r)), p, (l)*2)
+#define SMC_outsl(lp, r, p, l)	 writesw((short*)((lp)->base + (r)), p, (l)*2)
 
 #elif	SMC_USE_32BIT
 #define SMC_inl(lp, r)		 readl((lp)->base + (r))
