@@ -60,12 +60,6 @@ config SND_PXA2XX_SOC_POODLE
 	  Say Y if you want to add support for SoC audio on Sharp
 	  Zaurus SL-5600 model (Poodle).
 
-config SND_PXA2XX_SOC_TION270
-	tristate "SoC AC97 Audio support for Tion270 with WM9705"
-	depends on SND_PXA2XX_SOC && MACH_TION270
-	select SND_SOC_WM9705
-	select SND_PXA2XX_SOC_AC97
-
 config SND_PXA2XX_SOC_TOSA
 	tristate "SoC AC97 Audio support for Tosa"
 	depends on SND_PXA2XX_SOC && MACH_TOSA
@@ -87,7 +81,7 @@ config SND_PXA2XX_SOC_E740
 
 config SND_PXA2XX_SOC_E750
 	tristate "SoC AC97 Audio support for e750"
-	depends on SND_PXA2XX_SOC && MACH_TION270
+	depends on SND_PXA2XX_SOC && MACH_E750
 	select SND_SOC_WM9705
 	select SND_PXA2XX_SOC_AC97
 	help
