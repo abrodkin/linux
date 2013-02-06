@@ -12,6 +12,7 @@ obj-$(CONFIG_SND_PXA_SOC_SSP) += snd-soc-pxa-ssp.o
 # PXA Machine Support
 snd-soc-corgi-objs := corgi.o
 snd-soc-poodle-objs := poodle.o
+snd-soc-tion270-objs := tion270_wm9705.o
 snd-soc-tosa-objs := tosa.o
 snd-soc-e740-objs := e740_wm9705.o
 snd-soc-e750-objs := e750_wm9705.o
@@ -28,6 +29,7 @@ snd-soc-raumfeld-objs := raumfeld.o
 
 obj-$(CONFIG_SND_PXA2XX_SOC_CORGI) += snd-soc-corgi.o
 obj-$(CONFIG_SND_PXA2XX_SOC_POODLE) += snd-soc-poodle.o
+obj-$(CONFIG_SND_PXA2XX_SOC_TION270) += snd-soc-tion270.o
 obj-$(CONFIG_SND_PXA2XX_SOC_TOSA) += snd-soc-tosa.o
 obj-$(CONFIG_SND_PXA2XX_SOC_E740) += snd-soc-e740.o
 obj-$(CONFIG_SND_PXA2XX_SOC_E750) += snd-soc-e750.o
