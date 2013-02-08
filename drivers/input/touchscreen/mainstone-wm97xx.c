@@ -206,6 +206,10 @@ static int wm97xx_acc_startup(struct wm97xx *wm)
 		wm->variant = WM97xx_WM1613;
 	} else if (machine_is_mainstone() && pen_int)
 		irq = 4;
+	else if (machine_is_tion270()) {
+		pen_int = 1;
+		irq = 113;
+	}
 
 	if (irq) {
 		ret = gpio_request(irq, "Touchscreen IRQ");
