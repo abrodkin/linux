@@ -603,8 +603,7 @@ static void __init tion270_map_io(void)
 	iotable_init(tion270_io_desc, ARRAY_SIZE(tion270_io_desc));
 }
 
-/* TODO: tion270 ID */
-MACHINE_START(COLIBRI, "Tion270")
+MACHINE_START(TION270, "Tion270")
 	.phys_io	= 0x40000000,
 	.io_pg_offst	= (io_p2v(0x40000000) >> 18) & 0xfffc,
 	.boot_params	= 0x100,
