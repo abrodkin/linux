@@ -40,28 +40,28 @@
 #include "devices.h"
 
 #include <mach/ohci.h>
+#include <mach/pxafb.h>
 #include <mach/pxa27x_keypad.h>
 #include <asm/uaccess.h>
 #include <linux/i2c.h>
 #include <plat/i2c.h>
 #include <linux/leds.h>
-#if 0
-#include <linux/mmc/host.h>
-#endif
 #include <mach/mmc.h>
+#include <mach/audio.h>
+#include <linux/ucb1400.h>
 
 
 /*
  * GPIO configuration
  */
 static mfp_cfg_t tion270_pin_config[] __initdata = {
-	GPIO78_nCS_2,	/* Ethernet CS */
-	GPIO114_GPIO,	/* Ethernet IRQ */
-#if defined(CONFIG_SMC911X)
+			/* Ethernet */
 	GPIO49_nPWE,
-	GPIO79_nCS_3,
-	GPIO106_GPIO,
-#endif
+	GPIO78_nCS_2,	/* CS */
+	GPIO79_nCS_3,	/* Orion270 CS */
+	GPIO114_GPIO,	/* IRQ */
+	GPIO106_GPIO,	/* Orion270 Ethernet IRQ */
+
 				/* USB */
 #if 0
 	GPIO88_USBH1_PWR,	/* Not for USB host ports 1 and 2? */
@@ -93,15 +93,74 @@ static mfp_cfg_t tion270_pin_config[] __initdata = {
 	GPIO107_KP_MKOUT_4,
 #endif
 
-#if defined(CONFIG_MMC_PXA)
 	GPIO32_MMC_CLK,		/* MMC */
 	GPIO112_MMC_CMD,
 	GPIO92_MMC_DAT_0,
 	GPIO109_MMC_DAT_1,
 	GPIO110_MMC_DAT_2,
 	GPIO111_MMC_DAT_3,
-#endif
+
+	GPIO28_AC97_BITCLK,	/* AC97 */
+	GPIO29_AC97_SDATA_IN_0,
+	GPIO30_AC97_SDATA_OUT,
+	GPIO31_AC97_SYNC,
+	GPIO95_AC97_nRESET,
+	GPIO98_AC97_SYSCLK,
+	GPIO113_GPIO,		/* TS & Wake-on-LAN IRQ */
+
+//	GPIO16_PWM0_OUT,	/* LCD interface */
+	GPIO16_GPIO,
+
+	/* TFT LCD */
+	/* TODO: 18bpp */
+	GPIOxx_LCD_TFT_16BPP,
+
+	/* TODO: SSP */
 };
+
+#if (defined(CONFIG_FB_PXA) || defined(CONFIG_FB_PXA_MODULE)) && !defined(ORION270)
+static struct pxafb_mode_info tion270_lcd_modes[] = {
+{
+	.pixclock	= 57692,
+	.xres		= 640,
+	.yres		= 480,
+	.bpp		= 32,
+	.depth		= 18,
+
+	.left_margin	= 144,
+	.right_margin	= 32,
+	.upper_margin	= 13,
+	.lower_margin	= 30,
+
+	.hsync_len	= 32,
+	.vsync_len	= 2,
+
+	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+},
+};
+
+static void tion270_lcd_power(int on, struct fb_var_screeninfo *info)
+{
+#if 0
+	/* Only for Tion-Pro270 rev2.0 */ 
+	gpio_set_value(GPIO81_VPAC270_BKL_ON, on);
+#endif
+}
+
+static struct pxafb_mach_info tion270_lcd_screen = {
+	.modes		= tion270_lcd_modes,
+	.num_modes	= ARRAY_SIZE(tion270_lcd_modes),
+	.lcd_conn	= LCD_COLOR_TFT_18BPP,
+	.pxafb_lcd_power= tion270_lcd_power,
+};
+
+static void __init tion270_lcd_init(void)
+{
+	set_pxa_fb_info(&tion270_lcd_screen);
+}
+#else
+static inline void tion270_lcd_init(void) {}
+#endif
 
 #if defined(CONFIG_KEYBOARD_PXA27x) || defined(CONFIG_KEYBOARD_PXA27x_MODULE)
 # if defined(ORION270)
@@ -411,6 +470,38 @@ static void __init tion270_uhc_init(void)
 static inline void tion270_uhc_init(void) {}
 #endif	/* CONFIG_USB_OHCI_HCD */
 
+
+#if defined(CONFIG_SND_PXA2XX_AC97)
+/* AC97 */
+static pxa2xx_audio_ops_t tion270_ac97_info = {
+	.reset_gpio = 95,
+};
+
+# if defined(CONFIG_TOUCHSCREEN_UCB1400)
+static struct ucb1400_pdata tion270_ucb1400_pdata = {
+	.irq		= gpio_to_irq(113),
+};
+
+static struct platform_device tion270_ucb1400_device = {
+	.name		= "ucb1400_core",
+	.id		= -1,
+	.dev		= {
+		.platform_data = &tion270_ucb1400_pdata,
+	},
+};
+# endif
+
+static void __init tion270_audio_and_ts(void)
+{
+	pxa_set_ac97_info(&tion270_ac97_info);
+# if defined(CONFIG_TOUCHSCREEN_UCB1400)
+	platform_device_register(&tion270_ucb1400_device);
+# endif
+}
+#else
+static void __init tion270_audio_and_ts(void) {}
+#endif
+
 static struct platform_device *tion270_devices[] __initdata = {
 	&tion270_flash_device,
 #if defined(ORION270)
@@ -421,8 +512,6 @@ static struct platform_device *tion270_devices[] __initdata = {
 #endif
 #if defined(CONFIG_SMC911X)
 	&lan9221_device,
-#endif
-#if defined(CONFIG_SMC911X)
 #endif
 };
 
@@ -458,18 +547,6 @@ static struct pxamci_platform_data tion270_mci_platform_data = {
 
 static void __init tion270_mmc_init(void)
 {
-#if 0
-	err = request_irq(IRQ_GPIO(GPIO_MMC_CD_IRQ), detect_int,
-			IRQF_DISABLED | IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
-			"MMC card detect", data);
-	if (err) {
-		printk(KERN_ERR "%s: can't request MMC card detect IRQ\n", __FUNCTION__);
-		return -1;
-	}
-
-	set_irq_type(IRQ_GPIO(GPIO_MMC_CD_IRQ), IRQT_BOTHEDGE);
-#endif
-
 	pxa_set_mci_info(&tion270_mci_platform_data);
 }
 #else
@@ -482,6 +559,10 @@ static void __init tion270_init(void)
 	pxa_set_ffuart_info(NULL);
 	pxa_set_btuart_info(NULL);
 	pxa_set_stuart_info(NULL);
+
+	tion270_lcd_init();
+#if 0
+	/* For Orion270 */
 #if defined(CONFIG_SMC911X)
 /* TODO: do this in bootloader? */
 	/* SMSC LAN9221 data bus is 16 bit wide */
@@ -489,11 +570,22 @@ static void __init tion270_init(void)
 	MSC1;				/* Need to read */
 	set_irq_type(gpio_to_irq(106), IRQ_TYPE_EDGE_RISING);
 #endif
+#endif
 	platform_add_devices(ARRAY_AND_SIZE(tion270_devices));
 	tion270_uhc_init();
 	tion270_i2c_init();
+	tion270_audio_and_ts();
 	tion270_keypad_init();
 	tion270_mmc_init();
+
+#warning Fix me
+	/* TODO: do this via backlight PWM */
+	if (gpio_request(16, "LCD backlight"))
+		printk(KERN_ERR "can't request GPIO16\n");
+	gpio_direction_output(16, 1);
+	gpio_set_value(16, 1);
+
+
 }
 
 static struct map_desc tion270_io_desc[] __initdata = {
