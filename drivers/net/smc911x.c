@@ -178,12 +178,18 @@ static int smc911x_reset(struct net_device *dev)
 
 	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
 
+#if 0
+	SMC_SET_BYTE_TEST(lp, 0);	/* READY set in ~2 ms */
+	mdelay(2);
+PRINTK("%s: byte_test\n", __func__);
+#endif
 	/*	 Take out of PM setting first */
 	if ((SMC_GET_PMT_CTRL(lp) & PMT_CTRL_READY_) == 0) {
 		/* Write to the bytetest will take out of powerdown */
-		SMC_SET_BYTE_TEST(lp, 0);
+		SMC_SET_BYTE_TEST(lp, 0);	/* READY set in ~2 ms */
 		timeout=10;
 		do {
+PRINTK("%s: timeout0=%d\n", __func__, timeout);
 			udelay(10);
 			reg = SMC_GET_PMT_CTRL(lp) & PMT_CTRL_READY_;
 		} while (--timeout && !reg);
@@ -202,6 +208,7 @@ static int smc911x_reset(struct net_device *dev)
 		SMC_SET_HW_CFG(lp, HW_CFG_SRST_);
 		timeout=10;
 		do {
+PRINTK("%s: timeout1=%d\n", __func__, timeout);
 			udelay(10);
 			reg = SMC_GET_HW_CFG(lp);
 			/* If chip indicates reset timeout then try again */
@@ -1430,9 +1437,13 @@ smc911x_open(struct net_device *dev)
 		return -EINVAL;
 	}
 
+#if 1
+	smc911x_reset(dev);
+#else
 	/* reset the hardware */
 	if (smc911x_reset(dev))
 		return -EAGAIN;
+#endif
 
 	/* Configure the PHY, initialize the link state */
 	smc911x_phy_configure(&lp->phy_configure);
@@ -1791,6 +1802,8 @@ static int __devinit smc911x_findirq(struct net_device *dev)
 	do {
 		int int_status;
 		udelay(10);
+#warning TODO
+		/* TODO: check if int_status = SMC_GET_INT_EN(lp); */
 		int_status = SMC_GET_INT(lp);
 		if (int_status & INT_EN_SW_INT_EN_)
 			 break;		/* got the interrupt */
