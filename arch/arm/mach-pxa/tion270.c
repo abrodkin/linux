@@ -9,7 +9,9 @@
  *  published by the Free Software Foundation.
  */
 
+#warning: TODO: select via bootarg tag?
 #undef ORION270
+#define TION_PRO270
 
 #include <linux/init.h>
 #include <linux/kernel.h>
@@ -78,8 +80,10 @@ static mfp_cfg_t tion270_pin_config[] __initdata = {
 	GPIO39_FFUART_TXD,
 	GPIO40_FFUART_DTR,
 	GPIO100_FFUART_CTS,
-
-	GPIO44_BTUART_CTS,	/* BTUART */
+				/* BTUART */
+#if !defined(TION_PRO270)
+	GPIO44_BTUART_CTS,
+#endif
 	GPIO42_BTUART_RXD,
 	GPIO45_BTUART_RTS,
 	GPIO43_BTUART_TXD,
@@ -142,9 +146,11 @@ static struct pxafb_mode_info tion270_lcd_modes[] = {
 
 static void tion270_lcd_power(int on, struct fb_var_screeninfo *info)
 {
-#if 0
+	gpio_set_value(81, on);	/* VGA DAC power enable */
+
+#if defined(TION_PRO270)
 	/* Only for Tion-Pro270 rev2.0 */ 
-	gpio_set_value(GPIO81_VPAC270_BKL_ON, on);
+	gpio_set_value(44, on);	/* TFT LCD power enable */
 #endif
 }
 
@@ -608,7 +614,17 @@ static void __init tion270_init(void)
 	gpio_direction_output(16, 1);
 	gpio_set_value(16, 1);
 
+#if defined(TION_PRO270)
+	if (!gpio_request(44, "TFT LCD power enable")) {
+		gpio_set_value(44, 0);
+		gpio_direction_output(44, 1);
+	}
+#endif
 
+	if (!gpio_request(81, "VGA DAC power enable")) {
+		gpio_set_value(81, 0);
+		gpio_direction_output(81, 1);
+	}
 }
 
 static struct map_desc tion270_io_desc[] __initdata = {
