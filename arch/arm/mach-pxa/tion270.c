@@ -24,6 +24,8 @@
 #include <linux/mtd/physmap.h>
 #include <linux/gpio.h>
 #include <linux/usb.h>
+#include <linux/dm9000.h>
+#include <asm/setup.h>
 #include <asm/mach-types.h>
 #include <mach/hardware.h>
 #include <mach/pxa27x-udc.h>
@@ -262,11 +264,16 @@ static struct resource dm9000_resources[] = {
 	},
 };
 
+static struct dm9000_plat_data tion270_dm9000_platdata;
+
 static struct platform_device dm9000_device = {
 	.name		= "dm9000",
 	.id		= -1,
 	.num_resources	= ARRAY_SIZE(dm9000_resources),
 	.resource	= dm9000_resources,
+	.dev		= {
+		.platform_data = &tion270_dm9000_platdata,
+	},
 };
 #endif /* CONFIG_DM9000 */
 
@@ -555,6 +562,15 @@ static void __init tion270_mmc_init(void) {}
 
 static void __init tion270_init(void)
 {
+#if defined(CONFIG_DM9000)
+	struct dm9000_plat_data *dm9000_pdata = dm9000_device.dev.platform_data;
+
+	static union {
+		struct tag_serialnr tag;
+		unsigned char mac_addr[6];
+	} addr_join;
+#endif
+
 	pxa2xx_mfp_config(ARRAY_AND_SIZE(tion270_pin_config));
 	pxa_set_ffuart_info(NULL);
 	pxa_set_btuart_info(NULL);
@@ -571,6 +587,13 @@ static void __init tion270_init(void)
 	set_irq_type(gpio_to_irq(106), IRQ_TYPE_EDGE_RISING);
 #endif
 #endif
+
+#if defined(CONFIG_DM9000)
+	addr_join.tag.low = system_serial_low;
+	addr_join.tag.high = system_serial_high;
+	memcpy(dm9000_pdata->dev_addr, addr_join.mac_addr, 6);
+#endif
+
 	platform_add_devices(ARRAY_AND_SIZE(tion270_devices));
 	tion270_uhc_init();
 	tion270_i2c_init();
