@@ -201,10 +201,8 @@ static void __init tion270_keypad_init(void)
 static void __init tion270_keypad_init(void) {}
 #endif	/* CONFIG_KEYBOARD_PXA27x */
 
+/* LEDs */
 #if defined(ORION270)
-/*
- * LED
- */
 static struct gpio_led tion270_leds[] = {
 	{
 		.name		 = "tion270:yellow:1",
@@ -213,7 +211,26 @@ static struct gpio_led tion270_leds[] = {
 		.active_low	 = 1,
 	},
 };
+#endif
 
+#if defined(TION_PRO270)
+static struct gpio_led tion270_leds[] = {
+	{
+		.name		 = "tion-pro270:red:1",
+		.default_trigger = "none",
+		.gpio		 = 54,
+		.active_low	 = 1,
+	},
+	{
+		.name		 = "tion-pro270:green:1",
+		.default_trigger = "heartbeat",
+		.gpio		 = 107,
+		.active_low	 = 1,
+	},
+};
+#endif
+
+#if defined(TION_PRO270) || defined(ORION270)
 static struct gpio_led_platform_data tion270_leds_info = {
 	.leds		= tion270_leds,
 	.num_leds	= ARRAY_SIZE(tion270_leds),
@@ -517,7 +534,7 @@ static void __init tion270_audio_and_ts(void) {}
 
 static struct platform_device *tion270_devices[] __initdata = {
 	&tion270_flash_device,
-#if defined(ORION270)
+#if defined(TION_PRO270) || defined(ORION270)
 	&tion270_leds_device,
 #endif
 #if defined(CONFIG_DM9000)
@@ -609,10 +626,10 @@ static void __init tion270_init(void)
 
 #warning Fix me
 	/* TODO: do this via backlight PWM */
-	if (gpio_request(16, "LCD backlight"))
-		printk(KERN_ERR "can't request GPIO16\n");
-	gpio_direction_output(16, 1);
-	gpio_set_value(16, 1);
+	if (!gpio_request(16, "LCD backlight brightness")) {
+		gpio_set_value(16, 1);
+		gpio_direction_output(16, 1);
+	}
 
 #if defined(TION_PRO270)
 	if (!gpio_request(44, "TFT LCD power enable")) {
