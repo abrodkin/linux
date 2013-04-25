@@ -114,8 +114,7 @@ static mfp_cfg_t tion270_pin_config[] __initdata = {
 	GPIO16_GPIO,
 
 	/* TFT LCD */
-	/* TODO: 18bpp */
-	GPIOxx_LCD_TFT_16BPP,
+	GPIOxx_LCD_TFT_18BPP,
 
 	/* TODO: SSP */
 };
@@ -123,10 +122,10 @@ static mfp_cfg_t tion270_pin_config[] __initdata = {
 #if (defined(CONFIG_FB_PXA) || defined(CONFIG_FB_PXA_MODULE)) && !defined(ORION270)
 static struct pxafb_mode_info tion270_lcd_modes[] = {
 {
-	.pixclock	= 57692,
+	.pixclock	= 30000,
 	.xres		= 640,
 	.yres		= 480,
-	.bpp		= 32,
+	.bpp		= 24,
 	.depth		= 18,
 
 	.left_margin	= 144,
@@ -152,7 +151,8 @@ static void tion270_lcd_power(int on, struct fb_var_screeninfo *info)
 static struct pxafb_mach_info tion270_lcd_screen = {
 	.modes		= tion270_lcd_modes,
 	.num_modes	= ARRAY_SIZE(tion270_lcd_modes),
-	.lcd_conn	= LCD_COLOR_TFT_18BPP,
+	.lcd_conn	= LCD_COLOR_TFT_18BPP | LCD_ALTERNATE_MAPPING |
+				LCD_PCLK_EDGE_FALL,
 	.pxafb_lcd_power= tion270_lcd_power,
 };
 
