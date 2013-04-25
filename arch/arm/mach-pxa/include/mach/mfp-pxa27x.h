@@ -453,6 +453,11 @@
 	GPIO72_LCD_LDD_14,	\
 	GPIO73_LCD_LDD_15
 
+#define GPIOxx_LCD_18BPP	\
+	GPIOxx_LCD_16BPP,	\
+	GPIO86_LCD_LDD_16,	\
+	GPIO87_LCD_LDD_17	
+
 #define GPIOxx_LCD_TFT_16BPP	\
 	GPIOxx_LCD_16BPP,	\
 	GPIO74_LCD_FCLK,	\
@@ -460,6 +465,12 @@
 	GPIO76_LCD_PCLK,	\
 	GPIO77_LCD_BIAS
 
+#define GPIOxx_LCD_TFT_18BPP	\
+	GPIOxx_LCD_18BPP,	\
+	GPIO74_LCD_FCLK,	\
+	GPIO75_LCD_LCLK,	\
+	GPIO76_LCD_PCLK,	\
+	GPIO77_LCD_BIAS
 
 extern int keypad_set_wake(unsigned int on);
 #endif /* __ASM_ARCH_MFP_PXA27X_H */
