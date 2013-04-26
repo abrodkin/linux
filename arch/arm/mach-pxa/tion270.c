@@ -25,6 +25,7 @@
 #include <linux/mtd/partitions.h>
 #include <linux/mtd/physmap.h>
 #include <linux/gpio.h>
+#include <linux/pwm_backlight.h>
 #include <linux/usb.h>
 #include <linux/dm9000.h>
 #include <asm/setup.h>
@@ -114,8 +115,9 @@ static mfp_cfg_t tion270_pin_config[] __initdata = {
 	GPIO98_AC97_SYSCLK,
 	GPIO113_GPIO,		/* TS & Wake-on-LAN IRQ */
 
-//	GPIO16_PWM0_OUT,	/* LCD interface */
-	GPIO16_GPIO,
+#if !defined(ORION270)
+	GPIO16_PWM0_OUT,	/* LCD interface */
+#endif
 
 	/* TFT LCD */
 	GPIOxx_LCD_TFT_18BPP,
@@ -144,14 +146,46 @@ static struct pxafb_mode_info tion270_lcd_modes[] = {
 },
 };
 
+# if defined(TION_PRO270)
+static struct platform_pwm_backlight_data tion270_backlight_data = {
+	.pwm_id		= 0,
+	.max_brightness	= 100,
+	.dft_brightness	= 70,
+	.pwm_period_ns	= 10000,
+};
+
+static struct platform_device tion270_backlight_device = {
+	.name		= "pwm-backlight",
+	.dev		= {
+		.parent = &pxa27x_device_pwm0.dev,
+		.platform_data	= &tion270_backlight_data,
+	},
+};
+# endif
+
 static void tion270_lcd_power(int on, struct fb_var_screeninfo *info)
 {
 	gpio_set_value(81, on);	/* VGA DAC power enable */
 
-#if defined(TION_PRO270)
+# if defined(TION_PRO270)
 	/* Only for Tion-Pro270 rev2.0 */ 
 	gpio_set_value(44, on);	/* TFT LCD power enable */
-#endif
+# endif
+}
+
+void tion270_backlight_power(int on)
+{
+	mfp_cfg_t tion270_pin16_pwm0[] = {GPIO16_PWM0_OUT};
+	mfp_cfg_t tion270_pin16_gpio_out0[] = {
+		MFP_CFG_OUT(GPIO16, AF0, DRIVE_LOW)
+	};
+
+	if (on) {
+		pxa2xx_mfp_config(ARRAY_AND_SIZE(tion270_pin16_gpio_out0));
+#warning TODO: schedule_delayed_work()
+		msleep(100);
+		pxa2xx_mfp_config(ARRAY_AND_SIZE(tion270_pin16_pwm0));
+	}
 }
 
 static struct pxafb_mach_info tion270_lcd_screen = {
@@ -160,11 +194,13 @@ static struct pxafb_mach_info tion270_lcd_screen = {
 	.lcd_conn	= LCD_COLOR_TFT_18BPP | LCD_ALTERNATE_MAPPING |
 				LCD_PCLK_EDGE_FALL,
 	.pxafb_lcd_power= tion270_lcd_power,
+	.pxafb_backlight_power = tion270_backlight_power,
 };
 
 static void __init tion270_lcd_init(void)
 {
 	set_pxa_fb_info(&tion270_lcd_screen);
+	platform_device_register(&tion270_backlight_device);
 }
 #else
 static inline void tion270_lcd_init(void) {}
@@ -623,13 +659,6 @@ static void __init tion270_init(void)
 	tion270_audio_and_ts();
 	tion270_keypad_init();
 	tion270_mmc_init();
-
-#warning Fix me
-	/* TODO: do this via backlight PWM */
-	if (!gpio_request(16, "LCD backlight brightness")) {
-		gpio_set_value(16, 1);
-		gpio_direction_output(16, 1);
-	}
 
 #if defined(TION_PRO270)
 	if (!gpio_request(44, "TFT LCD power enable")) {

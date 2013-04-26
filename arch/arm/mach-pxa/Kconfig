@@ -259,6 +259,8 @@ config MACH_VPAC270
 config MACH_TION270
 	bool "Tion270"
 	select PXA27x
+	select HAVE_PWM
+	select PXA_HAVE_BOARD_IRQS
 
 comment "End-user Products (sorted by vendor name)"
 
