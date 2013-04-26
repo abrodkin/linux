@@ -11,7 +11,7 @@
 
 #warning: TODO: select via bootarg tag?
 #undef ORION270
-#define TION_PRO270
+#undef TION_PRO270
 
 #include <linux/init.h>
 #include <linux/kernel.h>
@@ -119,9 +119,6 @@ static mfp_cfg_t tion270_pin_config[] __initdata = {
 	GPIO16_PWM0_OUT,	/* LCD interface */
 #endif
 
-	/* TFT LCD */
-	GPIOxx_LCD_TFT_18BPP,
-
 	/* TODO: SSP */
 };
 
@@ -191,16 +188,38 @@ void tion270_backlight_power(int on)
 static struct pxafb_mach_info tion270_lcd_screen = {
 	.modes		= tion270_lcd_modes,
 	.num_modes	= ARRAY_SIZE(tion270_lcd_modes),
-	.lcd_conn	= LCD_COLOR_TFT_18BPP | LCD_ALTERNATE_MAPPING |
-				LCD_PCLK_EDGE_FALL,
+	/* .lcd_conn is set later */
 	.pxafb_lcd_power= tion270_lcd_power,
 	.pxafb_backlight_power = tion270_backlight_power,
 };
 
 static void __init tion270_lcd_init(void)
 {
+	mfp_cfg_t lcd_pins_16bpp[] = {GPIOxx_LCD_TFT_16BPP};
+	mfp_cfg_t lcd_pins_18bpp[] = {GPIOxx_LCD_TFT_18BPP};
+	int i;
+
+#warning TODO: 16/18bpp switching
+# if !defined(TION_PRO270)
+	/* 16 bpp */
+	pxa2xx_mfp_config(ARRAY_AND_SIZE(lcd_pins_16bpp));
+	tion270_lcd_screen.lcd_conn = LCD_COLOR_TFT_16BPP | LCD_PCLK_EDGE_FALL;
+	for (i = 0; i < tion270_lcd_screen.num_modes; i++) {
+		tion270_lcd_screen.modes[i].bpp = 16;
+		tion270_lcd_screen.modes[i].depth = 0;
+	}
+# else
+	/* 18 bpp */
+	pxa2xx_mfp_config(ARRAY_AND_SIZE(lcd_pins_18bpp));
+	tion270_lcd_screen.lcd_conn = LCD_COLOR_TFT_18BPP | LCD_ALTERNATE_MAPPING |
+				LCD_PCLK_EDGE_FALL,
+# endif
+
 	set_pxa_fb_info(&tion270_lcd_screen);
+
+# if defined(TION_PRO270)
 	platform_device_register(&tion270_backlight_device);
+# endif
 }
 #else
 static inline void tion270_lcd_init(void) {}
