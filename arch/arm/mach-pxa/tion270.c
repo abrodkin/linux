@@ -115,6 +115,25 @@ static mfp_cfg_t tion270_pin_config[] __initdata = {
 	GPIO98_AC97_SYSCLK,
 	GPIO113_GPIO,		/* TS & Wake-on-LAN IRQ */
 
+#if !defined(TION_PRO270)
+	GPIO85_nPCE_1,		/* PCMCIA */
+	GPIO54_nPCE_2,
+	GPIO55_nPREG,
+	GPIO50_nPIOR,
+	GPIO51_nPIOW,
+	GPIO49_nPWE,
+	GPIO48_nPOE,
+	GPIO57_nIOIS16,
+	GPIO56_nPWAIT,
+	GPIO104_PSKTSEL,
+	GPIO53_GPIO,	/* RESET */
+	GPIO83_GPIO,	/* BVD1 */
+	GPIO82_GPIO,	/* BVD2 */
+	GPIO1_GPIO,	/* READY */
+	GPIO84_GPIO,	/* DETECT */
+	GPIO107_GPIO,	/* PPEN */
+#endif
+
 #if !defined(ORION270)
 	GPIO16_PWM0_OUT,	/* LCD interface */
 #endif
