@@ -66,6 +66,7 @@ config CPU_S3C2440
 	select S3C2410_PM if PM
 	select S3C2440_DMA if S3C24XX_DMA
 	select SAMSUNG_HRT
+	select HAVE_PWM
 	help
 	  Support for S3C2440 Samsung Mobile CPU based systems.
 
