@@ -297,7 +297,10 @@ static int pwm_samsung_config(struct pwm_chip *chip, struct pwm_device *pwm,
 		unsigned long tin_rate;
 		u32 period;
 
-		period = NSEC_PER_SEC / period_ns;
+		if (period_ns)
+			period = NSEC_PER_SEC / period_ns;
+		else
+			period = 0;
 
 		dev_dbg(our_chip->chip.dev, "duty_ns=%d, period_ns=%d (%u)\n",
 						duty_ns, period_ns, period);
