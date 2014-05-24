@@ -603,6 +603,15 @@ static struct s3c_hwmon_pdata mini2440_adc __initdata = {
 	.in[7] = &mini2440_adc_chcfg[7],
 };
 
+static struct platform_device mini2440_buzzer_device = {
+	.name = "pwm-beeper",
+	.id = -1,
+	.dev = {
+		.parent = &samsung_device_pwm.dev,
+		.platform_data = (void *)0,	/* channel 0 */
+	},
+};
+
 static struct platform_device *mini2440_devices[] __initdata = {
 	&s3c_device_ohci,
 	&s3c_device_wdt,
@@ -619,6 +628,8 @@ static struct platform_device *mini2440_devices[] __initdata = {
 	&mini2440_audio,
 	&s3c_device_adc,
 	&s3c_device_hwmon,
+	&samsung_device_pwm,
+	&mini2440_buzzer_device,
 };
 
 static void __init mini2440_map_io(void)
@@ -781,6 +792,9 @@ static void __init mini2440_init(void)
 
 	i2c_register_board_info(0, mini2440_i2c_devs,
 				ARRAY_SIZE(mini2440_i2c_devs));
+
+	/* PWM to the buzzer */
+	s3c_gpio_cfgpin(S3C2410_GPB(0), S3C2410_GPB0_TOUT0);
 
 	platform_add_devices(mini2440_devices, ARRAY_SIZE(mini2440_devices));
 
