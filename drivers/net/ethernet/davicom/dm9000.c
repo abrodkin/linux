@@ -1290,6 +1290,7 @@ dm9000_open(struct net_device *dev)
 {
 	board_info_t *db = netdev_priv(dev);
 	unsigned long irqflags = db->irq_res->flags & IRQF_TRIGGER_MASK;
+	int gprval;
 
 	if (netif_msg_ifup(db))
 		dev_dbg(db->dev, "enabling %s\n", dev->name);
@@ -1302,9 +1303,15 @@ dm9000_open(struct net_device *dev)
 
 	irqflags |= IRQF_SHARED;
 
+	gprval = ior(db, DM9000_GPR);
+
 	/* GPIO0 on pre-activate PHY, Reg 1F is not set by reset */
-	iow(db, DM9000_GPR, 0);	/* REG_1F bit0 activate phyxcer */
-	mdelay(1); /* delay needs by DM9000B */
+	if (gprval & (1 << 0)) {
+		dev_dbg(db->dev, "Activate PHY GPR: 0x%x\n", gprval);
+		gprval = gprval & ~(1 << 0);
+		iow(db, DM9000_GPR, gprval);    /* REG_1F bit0 activate phyxcer */
+		mdelay(1); /* delay needed by DM9000B */
+	}
 
 	/* Initialize DM9000 board */
 	dm9000_reset(db);
