@@ -1049,6 +1049,7 @@ static int s3c2410fb_remove(struct platform_device *pdev)
 	iounmap(info->io);
 
 	release_mem_region(info->mem->start, resource_size(info->mem));
+	device_remove_file(&pdev->dev, &dev_attr_debug);
 
 	framebuffer_release(fbinfo);
 
