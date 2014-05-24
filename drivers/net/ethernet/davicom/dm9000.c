@@ -1337,7 +1337,8 @@ dm9000_shutdown(struct net_device *dev)
 	board_info_t *db = netdev_priv(dev);
 
 	/* RESET device */
-	dm9000_phy_write(dev, 0, MII_BMCR, BMCR_RESET);	/* PHY RESET */
+	if (db->type == TYPE_DM9000B)
+		dm9000_phy_write(dev, 0, MII_BMCR, BMCR_RESET); /* PHY RESET */
 	iow(db, DM9000_GPR, 0x01);	/* Power-Down PHY */
 	iow(db, DM9000_IMR, IMR_PAR);	/* Disable all interrupt */
 	iow(db, DM9000_RCR, 0x00);	/* Disable RX */
