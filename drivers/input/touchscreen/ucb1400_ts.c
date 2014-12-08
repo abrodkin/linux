@@ -190,17 +190,19 @@ static irqreturn_t ucb1400_irq(int irqnr, void *devid)
 {
 	struct ucb1400_ts *ucb = devid;
 	unsigned int x, y, p;
-	bool penup;
+	bool reported;
 
 	if (unlikely(irqnr != ucb->irq))
 		return IRQ_NONE;
 
 	ucb1400_clear_pending_irq(ucb);
 
-	/* Start with a small delay before checking pendown state */
+	/* Start with a small delay before reading position/pressure. */
 	msleep(UCB1400_TS_POLL_PERIOD);
 
-	while (!ucb->stopped && !(penup = ucb1400_ts_pen_up(ucb))) {
+	reported = 0;
+
+	while (!ucb->stopped) {
 
 		ucb1400_adc_enable(ucb->ac97);
 		x = ucb1400_ts_read_xpos(ucb);
@@ -208,13 +210,29 @@ static irqreturn_t ucb1400_irq(int irqnr, void *devid)
 		p = ucb1400_ts_read_pressure(ucb);
 		ucb1400_adc_disable(ucb->ac97);
 
-		ucb1400_ts_report_event(ucb->ts_idev, p, x, y);
+		/*
+		 * It seems like the interrupt mode is required for successful
+		 * ucb1400_ts_pen_up(). Note that we don't enable IRQ here.
+		 */
+		ucb1400_ts_mode_int(ucb);
 
 		wait_event_timeout(ucb->ts_wait, ucb->stopped,
 				   msecs_to_jiffies(UCB1400_TS_POLL_PERIOD));
+
+		/*
+		 * In the case the pen is up now, don't report the last event
+		 * to avoid transients.
+		 */
+		if (ucb->stopped || ucb1400_ts_pen_up(ucb))
+			break;
+
+		ucb1400_ts_report_event(ucb->ts_idev, p, x, y);
+		reported = 1;
 	}
 
-	ucb1400_ts_event_release(ucb->ts_idev);
+	/* Send release if an event has been reported previously. */
+	if (reported)
+		ucb1400_ts_event_release(ucb->ts_idev);
 
 	if (!ucb->stopped) {
 		/* Switch back to interrupt mode. */
@@ -372,8 +390,6 @@ static int ucb1400_ts_probe(struct platform_device *pdev)
 	input_set_abs_params(ucb->ts_idev, ABS_Y, 0, y_res, 0, 0);
 	input_set_abs_params(ucb->ts_idev, ABS_PRESSURE, 0, 0, 0, 0);
 
-	ucb1400_ts_stop(ucb);
-
 	error = request_threaded_irq(ucb->irq, NULL, ucb1400_irq,
 				     IRQF_TRIGGER_RISING | IRQF_ONESHOT,
 				     "UCB1400", ucb);
@@ -382,6 +398,8 @@ static int ucb1400_ts_probe(struct platform_device *pdev)
 			"unable to grab irq%d: %d\n", ucb->irq, error);
 		goto err_free_devs;
 	}
+
+	ucb1400_ts_stop(ucb);
 
 	error = input_register_device(ucb->ts_idev);
 	if (error)
