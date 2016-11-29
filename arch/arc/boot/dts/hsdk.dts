@@ -1,0 +1,80 @@
+/*
+ * Copyright (C) 2016 Synopsys, Inc. (www.synopsys.com)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+/*
+ * Device Tree for ARC HS Development Kit
+ */
+/dts-v1/;
+
+/include/ "skeleton_hs_idu.dtsi"
+
+/ {
+	model = "snps,hsdk";
+	compatible = "snps,hsdk";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+	interrupt-parent = <&core_intc>;
+
+	chosen {
+		bootargs = "earlycon=uart8250,mmio32,0xf0005000,115200n8 console=ttyS0,115200n8 debug print-fatal-signals=1";
+	};
+
+	cpu_card {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		ranges = <0x00000000 0xf0000000 0x10000000>;
+
+		core_clk: core_clk {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <50000000>;
+		};
+
+		core_intc: archs-intc@cpu {
+			compatible = "snps,archs-intc";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+
+		idu_intc: idu-interrupt-controller {
+			compatible = "snps,archs-idu-intc";
+			interrupt-controller;
+			interrupt-parent = <&core_intc>;
+
+			/*
+			 * <hwirq  distribution>
+			 * distribution: 0=RR; 1=cpu0, 2=cpu1, 4=cpu2, 8=cpu3
+			 */
+			#interrupt-cells = <2>;
+
+			/*
+			 * upstream irqs to core intc - downstream these are
+			 * "COMMON" irq 0,1..
+			 */
+			interrupts = <24 25 26 27 28 29 30 31>;
+		};
+
+		debug_uart: dw-apb-uart@0x5000 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x5000 0x100>;
+			clock-frequency = <50000000>;
+			interrupt-parent = <&idu_intc>;
+			interrupts = <6 0>; /* cmn irq 6 -> cpu irq 30, RR */
+			baud = <115200>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+		};
+
+		arcpct0: pct {
+			compatible = "snps,archs-pct";
+		};
+	};
+};
