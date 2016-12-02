@@ -89,5 +89,11 @@
 			clock-names = "stmmaceth";
 			max-speed = <100>;
 		};
+
+		ohci@0x60000 {
+			compatible = "generic-ohci";
+			reg = <0x60000 0x100>;
+			interrupts = <15>;
+		};
 	};
 };
