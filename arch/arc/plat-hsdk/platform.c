@@ -9,7 +9,29 @@
  */
 
 #include <linux/init.h>
+#include <linux/smp.h>
+#include <asm/arcregs.h>
 #include <asm/mach_desc.h>
+
+/*
+ * By default ICCM is mapped to 0x7z while this area is used for
+ * Virtual kernel mappings, so move it to currently unused area.
+ */
+void relocate_iccm(void)
+{
+	if (cpuinfo_arc700[smp_processor_id()].iccm.sz)
+		write_aux_reg(ARC_REG_AUX_ICCM, 0x60000000);
+}
+
+static void hsdk_early_init(void)
+{
+	relocate_iccm();
+}
+
+static void hsdk_init_per_cpu(unsigned int cpu)
+{
+	relocate_iccm();
+}
 
 /*----------------------- Machine Descriptions ------------------------------
  *
