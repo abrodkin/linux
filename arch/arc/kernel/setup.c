@@ -96,6 +96,7 @@ static void read_decode_ccm_bcr(struct cpuinfo_arc *cpu)
 			if (iccm.sz00 == 0xF && iccm.sz01 > 0)
 				cpu->iccm.sz <<= iccm.sz01;
 
+			write_aux_reg(ARC_REG_AUX_ICCM, 0x60000000); /* Force set ICCM to 0x6z */
 			region = read_aux_reg(ARC_REG_AUX_ICCM);
 			cpu->iccm.base_addr = region & 0xF0000000;
 		}
