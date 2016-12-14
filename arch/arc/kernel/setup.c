@@ -369,6 +369,10 @@ static void arc_chk_core_config(void)
 		pr_warn("Enable %s for working apps\n", opt_nm);
 	else if (!present && saved)
 		panic("Disable %s, hardware NOT present\n", opt_nm);
+
+#define AUX_SMART_CONTROL	0x700
+	if (cpu->extn.smart)
+		write_aux_reg(AUX_SMART_CONTROL, 1);
 }
 
 /*
