@@ -357,6 +357,10 @@ static void arc_chk_core_config(void)
 		pr_warn("CONFIG_ARC_FPU_SAVE_RESTORE needed for working apps\n");
 	else if (!cpu->extn.fpu_dp && fpu_enabled)
 		panic("FPU non-existent, disable CONFIG_ARC_FPU_SAVE_RESTORE\n");
+
+#define AUX_SMART_CONTROL	0x700
+	if (cpu->extn.smart)
+		write_aux_reg(AUX_SMART_CONTROL, 1);
 }
 
 /*
