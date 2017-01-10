@@ -62,6 +62,33 @@
 			interrupts = <24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39>;
 		};
 
+		apbclk: apbclk {
+			compatible = "fixed-clock";
+			clock-frequency = <50000000>;
+			#clock-cells = <0>;
+		};
+
+		ethernet@0x8000 {
+			#interrupt-cells = <1>;
+			compatible = "snps,dwmac";
+			reg = < 0x8000 0x2000 >;
+			interrupts = <10 0>; /* cmn irq 10 -> cpu irq 34, RR */
+			interrupt-names = "macirq";
+			interrupt-parent = <&idu_intc>;
+			phy-mode = "rgmii";
+			snps,pbl = <32>;
+			clocks = <&apbclk>;
+			clock-names = "stmmaceth";
+			max-speed = <100>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			phy0: ethernet-phy@1 {
+				interrupt-parent = <&idu_intc>;
+				interrupts = <11 0>; /* cmn irq 11 -> cpu irq 35, RR */
+				reg = <0>;
+			};
+		};
+
 		debug_uart: dw-apb-uart@0x5000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x5000 0x100>;
