@@ -73,12 +73,12 @@
 			reg-io-width = <4>;
 		};
 
-		ohci@0x60000 {
-			compatible = "generic-ohci";
-			reg = <0x60000 0x100>;
-			interrupt-parent = <&idu_intc>;
-			interrupts = <15 0>; /* cmn irq 15 -> cpu irq 39, RR */
-		};
+//		ohci@0x60000 {
+//			compatible = "generic-ohci";
+//			reg = <0x60000 0x100>;
+//			interrupt-parent = <&idu_intc>;
+//			interrupts = <15 0>; /* cmn irq 15 -> cpu irq 39, RR */
+//		};
 
 		arcpct0: pct {
 			compatible = "snps,archs-pct";
