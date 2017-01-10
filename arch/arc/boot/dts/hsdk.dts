@@ -70,5 +70,24 @@
 			reg-shift = <2>;
 			reg-io-width = <4>;
 		};
+
+		apbclk: apbclk {
+			compatible = "fixed-clock";
+			clock-frequency = <50000000>;
+			#clock-cells = <0>;
+		};
+
+		ethernet@0x8000 {
+			#interrupt-cells = <1>;
+			compatible = "snps,dwmac";
+			reg = < 0x8000 0x2000 >;
+			interrupts = <10>;
+			interrupt-names = "macirq";
+			phy-mode = "rgmii";
+			snps,pbl = <32>;
+			clocks = <&apbclk>;
+			clock-names = "stmmaceth";
+			max-speed = <100>;
+		};
 	};
 };
