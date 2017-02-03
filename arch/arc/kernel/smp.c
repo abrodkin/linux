@@ -104,9 +104,9 @@ static volatile int wake_flag;
 
 static void arc_default_smp_cpu_kick(int cpu, unsigned long pc)
 {
-	BUG_ON(cpu == 0);
+	BUG_ON(cpu == CONFIG_ARC_MASTER_CORE);
 
-	__boot_write(wake_flag, cpu);
+	__boot_write(wake_flag, BIT(cpu));
 }
 
 void arc_platform_smp_wait_to_boot(int cpu)
@@ -115,7 +115,7 @@ void arc_platform_smp_wait_to_boot(int cpu)
 	if (IS_ENABLED(CONFIG_ARC_SMP_HALT_ON_RESET))
 		return;
 
-	while (__boot_read(wake_flag) != cpu)
+	while (__boot_read(wake_flag) != BIT(cpu))
 		;
 
 	__boot_write(wake_flag, 0);

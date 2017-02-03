@@ -1111,6 +1111,6 @@ void __ref arc_cache_init(void)
 	 *    any geomtry checks will be same for all
 	 *  - IOC setup / dma callbacks only need to be setup once
 	 */
-	if (!cpu)
+	if (cpu == CONFIG_ARC_MASTER_CORE)
 		arc_cache_init_master();
 }
