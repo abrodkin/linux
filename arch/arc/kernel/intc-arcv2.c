@@ -12,6 +12,7 @@
 #include <linux/of.h>
 #include <linux/irqdomain.h>
 #include <linux/irqchip.h>
+#include <soc/arc/mcip.h>
 #include <asm/irq.h>
 
 #define NR_EXCEPTIONS	16
@@ -34,6 +35,7 @@ void arc_init_IRQ(void)
 {
 	unsigned int tmp, irq_prio, i;
 	struct bcr_irq_arcv2 irq_bcr;
+	struct mcip_bcr mp;
 
 	struct aux_irq_ctrl {
 #ifdef CONFIG_CPU_BIG_ENDIAN
@@ -76,9 +78,15 @@ void arc_init_IRQ(void)
 	 * switching of register banks if Fast IRQ and multiple register banks
 	 * are supported by CPU.
 	 */
+
+	READ_BCR(ARC_REG_MCIP_BCR, mp);
+
 	for (i = NR_EXCEPTIONS; i < irq_bcr.irqs + NR_EXCEPTIONS; i++) {
 		write_aux_reg(AUX_IRQ_SELECT, i);
 		write_aux_reg(AUX_IRQ_PRIORITY, ARCV2_IRQ_DEF_PRIO);
+
+		if (!mp.idu || i < FIRST_EXT_IRQ)
+			write_aux_reg(AUX_IRQ_ENABLE, 0);
 	}
 
 	/* setup status32, don't enable intr yet as kernel doesn't want */
