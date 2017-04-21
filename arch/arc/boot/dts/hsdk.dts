@@ -77,6 +77,12 @@
 			#clock-cells = <0>;
 		};
 
+		mmcclk: mmcclk {
+			compatible = "fixed-clock";
+			clock-frequency = <50000000>;
+			#clock-cells = <0>;
+		};
+
 		ethernet@0x8000 {
 			#interrupt-cells = <1>;
 			compatible = "snps,dwmac";
@@ -110,6 +116,18 @@
 			compatible = "generic-ehci";
 			reg = <0x40000 0x100>;
 			interrupts = <15>;
+		};
+
+		mmc@0xA000 {
+			compatible = "altr,socfpga-dw-mshc";
+			reg = <0xA000 0x400>;
+			num-slots = <1>;
+			fifo-depth = <16>;
+			card-detect-delay = <200>;
+			clocks = <&apbclk>, <&mmcclk>;
+			clock-names = "biu", "ciu";
+			interrupts = <12>;
+			bus-width = <4>;
 		};
 	};
 };
