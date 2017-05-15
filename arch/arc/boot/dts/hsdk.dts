@@ -33,7 +33,7 @@
 		core_clk: core_clk {
 			#clock-cells = <0>;
 			compatible = "fixed-clock";
-			clock-frequency = <50000000>;
+			clock-frequency = <500000000>;
 		};
 
 		core_intc: archs-intc@cpu {
@@ -64,7 +64,7 @@
 		uart: dw-apb-uart@0x5000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x5000 0x100>;
-			clock-frequency = <50000000>;
+			clock-frequency = <33330000>;
 			interrupts = <6>;
 			baud = <115200>;
 			reg-shift = <2>;
@@ -73,13 +73,13 @@
 
 		apbclk: apbclk {
 			compatible = "fixed-clock";
-			clock-frequency = <50000000>;
+			clock-frequency = <400000000>;
 			#clock-cells = <0>;
 		};
 
 		mmcclk: mmcclk {
 			compatible = "fixed-clock";
-			clock-frequency = <50000000>;
+			clock-frequency = <400000000>;
 			#clock-cells = <0>;
 		};
 
