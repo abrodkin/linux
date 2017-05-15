@@ -71,13 +71,19 @@
 			reg-io-width = <4>;
 		};
 
-		apbclk: apbclk {
+		gmacclk: gmacclk {
 			compatible = "fixed-clock";
 			clock-frequency = <400000000>;
 			#clock-cells = <0>;
 		};
 
-		mmcclk: mmcclk {
+		mmcclk_ciu: mmcclk_ciu {
+			compatible = "fixed-clock";
+			clock-frequency = <100000000>;
+			#clock-cells = <0>;
+		};
+
+		mmcclk_biu: mmcclk_biu {
 			compatible = "fixed-clock";
 			clock-frequency = <400000000>;
 			#clock-cells = <0>;
@@ -91,9 +97,8 @@
 			interrupt-names = "macirq";
 			phy-mode = "rgmii";
 			snps,pbl = <32>;
-			clocks = <&apbclk>;
+			clocks = <&gmacclk>;
 			clock-names = "stmmaceth";
-			max-speed = <100>;
 			phy-handle = <&phy0>;
 
 			mdio0 {
@@ -124,7 +129,7 @@
 			num-slots = <1>;
 			fifo-depth = <16>;
 			card-detect-delay = <200>;
-			clocks = <&apbclk>, <&mmcclk>;
+			clocks = <&mmcclk_biu>, <&mmcclk_ciu>;
 			clock-names = "biu", "ciu";
 			interrupts = <12>;
 			bus-width = <4>;
