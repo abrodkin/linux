@@ -135,4 +135,12 @@
 			bus-width = <4>;
 		};
 	};
+
+	memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0x00000000 0x90000000 0x40000000>;
+		device_type = "memory";
+		reg = <0x90000000 0x10000000>;	/* 256MiB */
+	};
 };
