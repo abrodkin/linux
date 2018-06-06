@@ -47,6 +47,7 @@ void arc_init_IRQ(void)
 #endif
 	} ictrl;
 
+#ifndef CONFIG_ARC_IRQ_NO_AUTOSAVE
 	*(unsigned int *)&ictrl = 0;
 
 	ictrl.save_nr_gpr_pairs = 6;	/* r0 to r11 (r12 saved manually) */
@@ -56,6 +57,7 @@ void arc_init_IRQ(void)
 	ictrl.save_idx_regs = 1;	/* JLI, LDI, EI */
 
 	WRITE_AUX(AUX_IRQ_CTRL, ictrl);
+#endif
 
 	/*
 	 * ARCv2 core intc provides multiple interrupt priorities (upto 16).
