@@ -10,7 +10,7 @@ KBUILD_DEFCONFIG := nsim_hs_defconfig
 
 cflags-y	+= -fno-common -pipe -fno-builtin -mmedium-calls -D__linux__
 cflags-$(CONFIG_ISA_ARCOMPACT)	+= -mA7
-cflags-$(CONFIG_ISA_ARCV2)	+= -mcpu=hs38
+cflags-$(CONFIG_ISA_ARCV2)	+= -mcpu=archs
 
 ifdef CONFIG_ARC_CURR_IN_REG
 # For a global register defintion, make sure it gets passed to every file
