@@ -86,6 +86,12 @@
 		clocks = <&core_clk>;
 	};
 
+	/* TIMER1 for free running clocksource: Fallback if rtc not found */
+	timer1 {
+		compatible = "snps,arc-timer";
+		clocks = <&core_clk>;
+	};
+
 	/* 64-bit Global Free Running Counter */
 	gfrc {
 		compatible = "snps,archs-timer-gfrc";
