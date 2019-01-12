@@ -297,6 +297,7 @@ static irqreturn_t timer_irq_handler(int irq, void *dev_id)
 	 * 2. Re-arm interrupt if periodic by writing to IE bit [0]
 	 */
 	write_aux_reg(ARC_REG_TIMER0_CTRL, irq_reenable | TIMER_CTRL_NH);
+	write_aux_reg(ARC_REG_TIMER0_CNT, 0);
 
 	evt->event_handler(evt);
 
