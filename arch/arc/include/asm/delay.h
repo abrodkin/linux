@@ -24,6 +24,7 @@ extern unsigned long loops_per_jiffy;
 
 static inline void __delay(unsigned long loops)
 {
+  /*
 	__asm__ __volatile__(
 	"	mov lp_count, %0	\n"
 	"	lp  1f			\n"
@@ -32,6 +33,16 @@ static inline void __delay(unsigned long loops)
 	:
         : "r"(loops)
         : "lp_count");
+  */
+  __asm__ __volatile__(
+      "  mov  r0, %0		\n"
+      "1:			\n"
+      "  sub  r0, r0, 1		\n"
+      "  brne r0, 0, 1b	        \n"
+      :
+      : "r"(loops)
+      : "r0");
+  __asm__ __volatile__("nop \n");
 }
 
 extern void __bad_udelay(void);
