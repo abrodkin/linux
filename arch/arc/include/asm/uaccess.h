@@ -720,7 +720,7 @@ static inline long __arc_strnlen_user(const char __user *s, long n)
 
 	return res;
 }
-
+/*
 #ifndef CONFIG_CC_OPTIMIZE_FOR_SIZE
 
 #define INLINE_COPY_TO_USER
@@ -741,7 +741,7 @@ extern long arc_strnlen_user_noinline(const char __user *src, long n);
 #define __strnlen_user(s, n)		arc_strnlen_user_noinline(s, n)
 
 #endif
-
+*/
 #include <asm-generic/uaccess.h>
 
 #endif
