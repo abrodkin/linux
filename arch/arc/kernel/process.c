@@ -111,25 +111,10 @@ void arch_cpu_idle(void)
 	/* Re-enable interrupts <= default irq priority before commiting SLEEP */
 	const unsigned int arg = 0x10 | ARCV2_IRQ_DEF_PRIO;
 
-	unsigned long ticks = jiffies;
 	__asm__ __volatile__(
-		"seti  0x30  \n");
-	//while (ticks == jiffies);
-
-	__asm__ __volatile__(
-		"mov r10,10000 \n"
-		"1:  \n"
-		"   sub r10,r10,1 \n"
-		"   nop \n"
-		"   brne r10,0,1b  \n"
+		"sleep %0	\n"
 		:
-		:
-		: "r10");
-
-//	__asm__ __volatile__(
-//		"sleep %0	\n"
-//		:
-//		:"I"(arg)); /* can't be "r" has to be embedded const */
+		:"I"(arg)); /* can't be "r" has to be embedded const */
 }
 
 #elif defined(CONFIG_EZNPS_MTM_EXT)	/* ARC700 variant in NPS */
