@@ -1389,6 +1389,8 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	struct mm_struct *mm = current->mm;
 	int pkey = 0;
 
+printk(" *** %s@%d: addr=0x%08x, len=%d, flags=0x%08x\n", __func__, __LINE__, addr, len, flags);
+
 	*populate = 0;
 
 	if (!len)

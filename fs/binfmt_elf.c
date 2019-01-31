@@ -181,13 +181,16 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
 	const struct cred *cred = current_cred();
 	struct vm_area_struct *vma;
 
+printk(" *** %s@%d: sp = 0x%08x\n", __func__, __LINE__, sp);
 	/*
 	 * In some cases (e.g. Hyper-Threading), we want to avoid L1
 	 * evictions by the processes running on the same package. One
 	 * thing we can do is to shuffle the initial stack for them.
 	 */
 
+printk(" *** %s@%d: p = 0x%08x\n", __func__, __LINE__, p);
 	p = arch_align_stack(p);
+printk(" *** %s@%d: p = 0x%08x\n", __func__, __LINE__, p);
 
 	/*
 	 * If this architecture has a platform capability string, copy it
@@ -282,12 +285,16 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
 	/* And advance past the AT_NULL entry.  */
 	ei_index += 2;
 
+printk(" *** %s@%d: p = 0x%08x\n", __func__, __LINE__, p);
+printk(" *** %s@%d: sp = 0x%08x\n", __func__, __LINE__, sp);
 	sp = STACK_ADD(p, ei_index);
+printk(" *** %s@%d: sp = 0x%08x\n", __func__, __LINE__, sp);
 
 	items = (argc + 1) + (envc + 1) + 1;
 	bprm->p = STACK_ROUND(sp, items);
 
 	/* Point sp at the lowest address on the stack */
+printk(" *** %s@%d: sp = 0x%08x\n", __func__, __LINE__, sp);
 #ifdef CONFIG_STACK_GROWSUP
 	sp = (elf_addr_t __user *)bprm->p - items - ei_index;
 	bprm->exec = (unsigned long)sp; /* XXX: PARISC HACK */
@@ -295,6 +302,7 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
 	sp = (elf_addr_t __user *)bprm->p;
 #endif
 
+printk(" *** %s@%d: sp = 0x%08x\n", __func__, __LINE__, sp);
 
 	/*
 	 * Grow the stack manually; some architectures have a limit on how
@@ -338,9 +346,12 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
 		return -EFAULT;
 	current->mm->env_end = p;
 
+printk(" *** %s@%d: sp = 0x%08x\n", __func__, __LINE__, sp);
+
 	/* Put the elf_info on the stack in the right place.  */
 	if (copy_to_user(sp, elf_info, ei_index * sizeof(elf_addr_t)))
 		return -EFAULT;
+printk(" *** %s@%d: sp = 0x%08x\n", __func__, __LINE__, sp);
 	return 0;
 }
 
@@ -716,7 +727,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		retval = -ENOMEM;
 		goto out_ret;
 	}
-	
+printk(" *** %s@%d\n", __func__, __LINE__);
 	/* Get the exec-header */
 	loc->elf_ex = *((struct elfhdr *)bprm->buf);
 
@@ -725,6 +736,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (memcmp(loc->elf_ex.e_ident, ELFMAG, SELFMAG) != 0)
 		goto out;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	if (loc->elf_ex.e_type != ET_EXEC && loc->elf_ex.e_type != ET_DYN)
 		goto out;
 	if (!elf_check_arch(&loc->elf_ex))
@@ -734,10 +746,12 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (!bprm->file->f_op->mmap)
 		goto out;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	elf_phdata = load_elf_phdrs(&loc->elf_ex, bprm->file);
 	if (!elf_phdata)
 		goto out;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	elf_ppnt = elf_phdata;
 	elf_bss = 0;
 	elf_brk = 0;
@@ -747,6 +761,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	start_data = 0;
 	end_data = 0;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	for (i = 0; i < loc->elf_ex.e_phnum; i++) {
 		if (elf_ppnt->p_type == PT_INTERP) {
 			/* This is the program interpreter used for
@@ -758,12 +773,14 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			    elf_ppnt->p_filesz < 2)
 				goto out_free_ph;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 			retval = -ENOMEM;
 			elf_interpreter = kmalloc(elf_ppnt->p_filesz,
 						  GFP_KERNEL);
 			if (!elf_interpreter)
 				goto out_free_ph;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 			pos = elf_ppnt->p_offset;
 			retval = kernel_read(bprm->file, elf_interpreter,
 					     elf_ppnt->p_filesz, &pos);
@@ -777,11 +794,13 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			if (elf_interpreter[elf_ppnt->p_filesz - 1] != '\0')
 				goto out_free_interp;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 			interpreter = open_exec(elf_interpreter);
 			retval = PTR_ERR(interpreter);
 			if (IS_ERR(interpreter))
 				goto out_free_interp;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 			/*
 			 * If the binary is not readable then enforce
 			 * mm->dumpable = 0 regardless of the interpreter's
@@ -799,11 +818,13 @@ static int load_elf_binary(struct linux_binprm *bprm)
 				goto out_free_dentry;
 			}
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 			break;
 		}
 		elf_ppnt++;
 	}
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	elf_ppnt = elf_phdata;
 	for (i = 0; i < loc->elf_ex.e_phnum; i++, elf_ppnt++)
 		switch (elf_ppnt->p_type) {
@@ -823,6 +844,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			break;
 		}
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	/* Some simple consistency checks for the interpreter */
 	if (elf_interpreter) {
 		retval = -ELIBBAD;
@@ -854,6 +876,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			}
 	}
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	/*
 	 * Allow arch code to reject the ELF at this point, whilst it's
 	 * still possible to return an error to the code that invoked
@@ -865,6 +888,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (retval)
 		goto out_free_dentry;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	/* Flush all traces of the currently running executable */
 	retval = flush_old_exec(bprm);
 	if (retval)
@@ -879,16 +903,22 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
 		current->flags |= PF_RANDOMIZE;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	setup_new_exec(bprm);
+printk(" *** %s@%d\n", __func__, __LINE__);
 	install_exec_creds(bprm);
+printk(" *** %s@%d\n", __func__, __LINE__);
 
 	/* Do this so that we can load the interpreter, if need be.  We will
 	   change some of these later */
 	retval = setup_arg_pages(bprm, randomize_stack_top(STACK_TOP),
 				 executable_stack);
+printk(" *** %s@%d\n", __func__, __LINE__);
 	if (retval < 0)
 		goto out_free_dentry;
+
 	
+printk(" *** %s@%d: bprm->p = 0x%08x\n", __func__, __LINE__, bprm->p);
 	current->mm->start_stack = bprm->p;
 
 	/* Now we do a little grungy work by mmapping the ELF image into
@@ -1016,9 +1046,11 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			goto out_free_dentry;
 		}
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 		if (!load_addr_set) {
 			load_addr_set = 1;
 			load_addr = (elf_ppnt->p_vaddr - elf_ppnt->p_offset);
+printk(" *** %s@%d: load_addr = 0x%08x\n", __func__, __LINE__, load_addr);
 			if (loc->elf_ex.e_type == ET_DYN) {
 				load_bias += error -
 				             ELF_PAGESTART(load_bias + vaddr);
@@ -1173,6 +1205,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 out:
 	kfree(loc);
 out_ret:
+printk(" *** %s@%d\n", __func__, __LINE__);
 	return retval;
 
 	/* error cleanup */

@@ -6,6 +6,8 @@
 #ifndef INLINE_COPY_FROM_USER
 unsigned long _copy_from_user(void *to, const void __user *from, unsigned long n)
 {
+print_hex_dump(KERN_INFO, "_copy_from_user:\t\t", DUMP_PREFIX_ADDRESS, 16, 1, from, n, true);
+
 	unsigned long res = n;
 	might_fault();
 	if (likely(access_ok(VERIFY_READ, from, n))) {
@@ -22,6 +24,8 @@ EXPORT_SYMBOL(_copy_from_user);
 #ifndef INLINE_COPY_TO_USER
 unsigned long _copy_to_user(void __user *to, const void *from, unsigned long n)
 {
+print_hex_dump(KERN_INFO, "_copy_to_user:\t\t", DUMP_PREFIX_ADDRESS, 16, 1, from, n, true);
+
 	might_fault();
 	if (likely(access_ok(VERIFY_WRITE, to, n))) {
 		kasan_check_read(from, n);

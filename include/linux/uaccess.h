@@ -143,6 +143,9 @@ _copy_to_user(void __user *, const void *, unsigned long);
 static __always_inline unsigned long __must_check
 copy_from_user(void *to, const void __user *from, unsigned long n)
 {
+	print_hex_dump(KERN_INFO, "copy_from_user:\t\t", DUMP_PREFIX_ADDRESS, 16, 1,
+		       from, n, true);
+
 	if (likely(check_copy_size(to, n, false)))
 		n = _copy_from_user(to, from, n);
 	return n;
@@ -151,6 +154,9 @@ copy_from_user(void *to, const void __user *from, unsigned long n)
 static __always_inline unsigned long __must_check
 copy_to_user(void __user *to, const void *from, unsigned long n)
 {
+	print_hex_dump(KERN_INFO, "copy_to_user:\t\t", DUMP_PREFIX_ADDRESS, 16, 1,
+		       from, n, true);
+
 	if (likely(check_copy_size(from, n, true)))
 		n = _copy_to_user(to, from, n);
 	return n;

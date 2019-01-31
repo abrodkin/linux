@@ -286,6 +286,8 @@ void start_thread(struct pt_regs * regs, unsigned long pc, unsigned long usp)
 	/* bogus seed values for debugging */
 	regs->lp_start = 0x10;
 	regs->lp_end = 0x80;
+
+printk(" *** %s@%d: regs->sp=0x%08x. regs->ret=0x%08x, regs->status32=0x%08x\n", __func__, __LINE__, regs->sp, regs->ret, regs->status32);
 }
 
 /*

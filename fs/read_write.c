@@ -429,6 +429,10 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	set_fs(get_ds());
 	/* The cast to a user pointer is valid due to the set_fs() */
 	result = vfs_read(file, (void __user *)buf, count, pos);
+
+	print_hex_dump(KERN_INFO, "", DUMP_PREFIX_ADDRESS, 16, 1,
+		       buf, count, true);
+
 	set_fs(old_fs);
 	return result;
 }

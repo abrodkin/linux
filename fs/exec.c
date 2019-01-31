@@ -79,9 +79,14 @@ static DEFINE_RWLOCK(binfmt_lock);
 
 void __register_binfmt(struct linux_binfmt * fmt, int insert)
 {
+printk(" *** %s@%d\n", __func__, __LINE__);
 	BUG_ON(!fmt);
-	if (WARN_ON(!fmt->load_binary))
+	if (WARN_ON(!fmt->load_binary)) {
+		printk(" *** %s@%d\n", __func__, __LINE__);
 		return;
+	}
+
+printk(" *** %s@%d\n", __func__, __LINE__);
 	write_lock(&binfmt_lock);
 	insert ? list_add(&fmt->lh, &formats) :
 		 list_add_tail(&fmt->lh, &formats);
@@ -1650,22 +1655,34 @@ int search_binary_handler(struct linux_binprm *bprm)
 			continue;
 		read_unlock(&binfmt_lock);
 		bprm->recursion_depth++;
+printk(" *** %s@%d\n", __func__, __LINE__);
 		retval = fmt->load_binary(bprm);
+printk(" *** %s@%d\n", __func__, __LINE__);
 		read_lock(&binfmt_lock);
+printk(" *** %s@%d\n", __func__, __LINE__);
 		put_binfmt(fmt);
+printk(" *** %s@%d\n", __func__, __LINE__);
 		bprm->recursion_depth--;
 		if (retval < 0 && !bprm->mm) {
+printk(" *** %s@%d\n", __func__, __LINE__);
 			/* we got to flush_old_exec() and failed after it */
 			read_unlock(&binfmt_lock);
+printk(" *** %s@%d\n", __func__, __LINE__);
 			force_sigsegv(SIGSEGV, current);
+printk(" *** %s@%d\n", __func__, __LINE__);
 			return retval;
 		}
+printk(" *** %s@%d\n", __func__, __LINE__);
 		if (retval != -ENOEXEC || !bprm->file) {
+printk(" *** %s@%d\n", __func__, __LINE__);
 			read_unlock(&binfmt_lock);
+printk(" *** %s@%d\n", __func__, __LINE__);
 			return retval;
 		}
 	}
+printk(" *** %s@%d\n", __func__, __LINE__);
 	read_unlock(&binfmt_lock);
+printk(" *** %s@%d\n", __func__, __LINE__);
 
 	if (need_retry) {
 		if (printable(bprm->buf[0]) && printable(bprm->buf[1]) &&
@@ -1677,6 +1694,7 @@ int search_binary_handler(struct linux_binprm *bprm)
 		goto retry;
 	}
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	return retval;
 }
 EXPORT_SYMBOL(search_binary_handler);
@@ -1686,13 +1704,16 @@ static int exec_binprm(struct linux_binprm *bprm)
 	pid_t old_pid, old_vpid;
 	int ret;
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	/* Need to fetch pid before load_binary changes it */
 	old_pid = current->pid;
 	rcu_read_lock();
 	old_vpid = task_pid_nr_ns(current, task_active_pid_ns(current->parent));
 	rcu_read_unlock();
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	ret = search_binary_handler(bprm);
+printk(" *** %s@%d\n", __func__, __LINE__);
 	if (ret >= 0) {
 		audit_bprm(bprm);
 		trace_sched_process_exec(current, old_pid, bprm);
@@ -1700,6 +1721,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 		proc_exec_connector(current);
 	}
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	return ret;
 }
 
@@ -1817,6 +1839,7 @@ static int __do_execve_file(int fd, struct filename *filename,
 	would_dump(bprm, bprm->file);
 
 	retval = exec_binprm(bprm);
+printk(" *** %s@%d\n", __func__, __LINE__);
 	if (retval < 0)
 		goto out;
 
@@ -1833,6 +1856,7 @@ static int __do_execve_file(int fd, struct filename *filename,
 		putname(filename);
 	if (displaced)
 		put_files_struct(displaced);
+printk(" *** %s@%d\n", __func__, __LINE__);
 	return retval;
 
 out:
@@ -1863,6 +1887,7 @@ static int do_execveat_common(int fd, struct filename *filename,
 			      struct user_arg_ptr envp,
 			      int flags)
 {
+printk(" *** %s@%d\n", __func__, __LINE__);
 	return __do_execve_file(fd, filename, argv, envp, flags, NULL);
 }
 
@@ -1871,6 +1896,7 @@ int do_execve_file(struct file *file, void *__argv, void *__envp)
 	struct user_arg_ptr argv = { .ptr.native = __argv };
 	struct user_arg_ptr envp = { .ptr.native = __envp };
 
+printk(" *** %s@%d\n", __func__, __LINE__);
 	return __do_execve_file(AT_FDCWD, NULL, argv, envp, 0, file);
 }
 
@@ -1880,6 +1906,7 @@ int do_execve(struct filename *filename,
 {
 	struct user_arg_ptr argv = { .ptr.native = __argv };
 	struct user_arg_ptr envp = { .ptr.native = __envp };
+printk(" *** %s@%d\n", __func__, __LINE__);
 	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
 }
 
@@ -1961,6 +1988,7 @@ SYSCALL_DEFINE3(execve,
 		const char __user *const __user *, argv,
 		const char __user *const __user *, envp)
 {
+printk(" *** %s@%d\n", __func__, __LINE__);
 	return do_execve(getname(filename), argv, envp);
 }
 

@@ -117,7 +117,7 @@
 						\
 	: "+r" (ret), "=r" (dst)		\
 	: "r" (src), "ir" (-EFAULT))
-
+#if 0
 #define __put_user_fn(sz, u, k)					\
 ({								\
 	long __ret = 0;	/* success by default */	\
@@ -165,7 +165,7 @@
 						\
 	: "+r" (ret)				\
 	: "r" (src), "r" (dst), "ir" (-EFAULT))
-
+#endif
 
 static inline unsigned long
 raw_copy_from_user(void *to, const void __user *from, unsigned long n)
@@ -178,6 +178,9 @@ raw_copy_from_user(void *to, const void __user *from, unsigned long n)
 	if (n == 0)
 		return 0;
 
+	memcpy(to, from, n);
+
+#if 0
 	/* unaligned */
 	if (((unsigned long)to & 0x3) || ((unsigned long)from & 0x3)) {
 
@@ -390,7 +393,7 @@ raw_copy_from_user(void *to, const void __user *from, unsigned long n)
 		:
 		: "lp_count", "memory");
 	}
-
+#endif
 	return res;
 }
 
@@ -405,6 +408,8 @@ raw_copy_to_user(void __user *to, const void *from, unsigned long n)
 	if (n == 0)
 		return 0;
 
+	memcpy(to, from, n);
+#if 0
 	/* unaligned */
 	if (((unsigned long)to & 0x3) || ((unsigned long)from & 0x3)) {
 
@@ -612,7 +617,7 @@ raw_copy_to_user(void __user *to, const void *from, unsigned long n)
 		:
 		: "lp_count", "memory");
 	}
-
+#endif
 	return res;
 }
 
@@ -621,6 +626,9 @@ static inline unsigned long __arc_clear_user(void __user *to, unsigned long n)
 	long res = n;
 	unsigned char *d_char = to;
 
+	memset(to, 0, n);
+
+#if 0
 	__asm__ __volatile__(
 	"	bbit0   %0, 0, 1f		\n"
 	"75:	stb.ab  %2, [%0,1]		\n"
@@ -654,7 +662,7 @@ static inline unsigned long __arc_clear_user(void __user *to, unsigned long n)
 	: "+r"(d_char), "+r"(res)
 	: "i"(0)
 	: "lp_count", "lp_start", "lp_end", "memory");
-
+#endif
 	return res;
 }
 
@@ -667,6 +675,8 @@ __arc_strncpy_from_user(char *dst, const char __user *src, long count)
 	if (count == 0)
 		return 0;
 
+	memcpy(dst, src, count);
+#if 0
 	__asm__ __volatile__(
 	"	mov	lp_count, %5		\n"
 	"	lp	3f			\n"
@@ -687,7 +697,7 @@ __arc_strncpy_from_user(char *dst, const char __user *src, long count)
 	: "+r"(res), "+r"(dst), "+r"(src), "=r"(val)
 	: "g"(-EFAULT), "r"(count)
 	: "lp_count", "lp_start", "lp_end", "memory");
-
+#endif
 	return res;
 }
 

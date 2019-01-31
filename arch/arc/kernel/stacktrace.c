@@ -223,6 +223,8 @@ static int __get_first_nonsched(unsigned int address, void *unused)
 noinline void show_stacktrace(struct task_struct *tsk, struct pt_regs *regs)
 {
 	pr_info("\nStack Trace:\n");
+//	__builtin_arc_flag(1);
+	panic(" ***\n");
 	arc_unwind_core(tsk, regs, __print_sym, NULL);
 }
 EXPORT_SYMBOL(show_stacktrace);
