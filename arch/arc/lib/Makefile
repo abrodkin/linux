@@ -5,6 +5,6 @@
 # it under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
 
-lib-y	:= strchr-700.o strcpy-700.o strlen.o memcmp.o
+lib-y	:= strchr-700.o strcpy-700.o
 
 lib-$(CONFIG_ISA_ARCOMPACT)	+= memcpy-700.o memset.o strcmp.o

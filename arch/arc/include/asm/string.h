@@ -17,14 +17,10 @@
 
 #include <linux/types.h>
 
-#define __HAVE_ARCH_MEMCMP
 #define __HAVE_ARCH_STRCHR
 #define __HAVE_ARCH_STRCPY
-#define __HAVE_ARCH_STRLEN
 
-extern int memcmp(const void *, const void *, __kernel_size_t);
 extern char *strchr(const char *s, int c);
 extern char *strcpy(char *dest, const char *src);
-extern __kernel_size_t strlen(const char *);
 
 #endif /* _ASM_ARC_STRING_H */
