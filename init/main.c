@@ -406,23 +406,16 @@ noinline void __ref rest_init(void)
 	 * the init task will end up wanting to create kthreads, which, if
 	 * we schedule it before we create kthreadd, will OOPS.
 	 */
-printk(" *** %s@%d\n", __func__, __LINE__);
 	pid = kernel_thread(kernel_init, NULL, CLONE_FS);
-printk(" *** %s@%d\n", __func__, __LINE__);
 	/*
 	 * Pin init on the boot CPU. Task migration is not properly working
 	 * until sched_init_smp() has been run. It will set the allowed
 	 * CPUs for init to the non isolated CPUs.
 	 */
-printk(" *** %s@%d\n", __func__, __LINE__);
 	rcu_read_lock();
-printk(" *** %s@%d\n", __func__, __LINE__);
 	tsk = find_task_by_pid_ns(pid, &init_pid_ns);
-printk(" *** %s@%d\n", __func__, __LINE__);
 	set_cpus_allowed_ptr(tsk, cpumask_of(smp_processor_id()));
-printk(" *** %s@%d\n", __func__, __LINE__);
 	rcu_read_unlock();
-printk(" *** %s@%d\n", __func__, __LINE__);
 
 	numa_default_policy();
 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
@@ -430,7 +423,6 @@ printk(" *** %s@%d\n", __func__, __LINE__);
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
 	rcu_read_unlock();
 
-printk(" *** %s@%d\n", __func__, __LINE__);
 	/*
 	 * Enable might_sleep() and smp_processor_id() checks.
 	 * They cannot be enabled earlier because with CONFIG_PREEMPT=y
@@ -440,17 +432,14 @@ printk(" *** %s@%d\n", __func__, __LINE__);
 	 */
 	system_state = SYSTEM_SCHEDULING;
 
-printk(" *** %s@%d\n", __func__, __LINE__);
 	complete(&kthreadd_done);
 
-printk(" *** %s@%d\n", __func__, __LINE__);
 	/*
 	 * The boot idle thread must execute schedule()
 	 * at least once to get things moving:
 	 */
 	schedule_preempt_disabled();
 	/* Call into cpu_idle with preempt disabled */
-printk(" *** %s@%d\n", __func__, __LINE__);
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
@@ -1022,7 +1011,6 @@ static int run_init_process(const char *init_filename)
 {
 	argv_init[0] = init_filename;
 	pr_info("Run %s as init process\n", init_filename);
-printk(" *** %s@%d\n", __func__, __LINE__);
 	return do_execve(getname_kernel(init_filename),
 		(const char __user *const __user *)argv_init,
 		(const char __user *const __user *)envp_init);
@@ -1032,9 +1020,7 @@ static int try_to_run_init_process(const char *init_filename)
 {
 	int ret;
 
-printk(" *** %s@%d\n", __func__, __LINE__);
 	ret = run_init_process(init_filename);
-printk(" *** %s@%d\n", __func__, __LINE__);
 
 	if (ret && ret != -ENOENT) {
 		pr_err("Starting init: %s exists but couldn't execute it (error %d)\n",
@@ -1101,9 +1087,7 @@ static int __ref kernel_init(void *unused)
 	rcu_end_inkernel_boot();
 
 	if (ramdisk_execute_command) {
-printk(" *** %s@%d\n", __func__, __LINE__);
 		ret = run_init_process(ramdisk_execute_command);
-printk(" *** %s@%d\n", __func__, __LINE__);
 		if (!ret)
 			return 0;
 		pr_err("Failed to execute %s (error %d)\n",
@@ -1116,11 +1100,8 @@ printk(" *** %s@%d\n", __func__, __LINE__);
 	 * The Bourne shell can be used instead of init if we are
 	 * trying to recover a really broken machine.
 	 */
-printk(" *** %s@%d\n", __func__, __LINE__);
 	if (execute_command) {
-printk(" *** %s@%d\n", __func__, __LINE__);
 		ret = run_init_process(execute_command);
-printk(" *** %s@%d\n", __func__, __LINE__);
 		if (!ret)
 			return 0;
 		panic("Requested init %s failed (error %d).",
