@@ -59,12 +59,12 @@ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
 
 	if (ret) {
 		num = USER_PTRS_PER_PGD + USER_KERNEL_GUTTER / PGDIR_SIZE;
-		memzero(ret, num * sizeof(pgd_t));
+		memset(ret, 0, num * sizeof(pgd_t));
 
 		num2 = VMALLOC_SIZE / PGDIR_SIZE;
 		memcpy(ret + num, swapper_pg_dir + num, num2 * sizeof(pgd_t));
 
-		memzero(ret + num + num2,
+		memset(ret + num + num2, 0,
 			       (PTRS_PER_PGD - num - num2) * sizeof(pgd_t));
 
 	}
@@ -110,7 +110,7 @@ pte_alloc_one(struct mm_struct *mm, unsigned long address)
 	pte_pg = (pgtable_t)__get_free_pages(GFP_KERNEL, __get_order_pte());
 	if (!pte_pg)
 		return 0;
-	memzero((void *)pte_pg, PTRS_PER_PTE * sizeof(pte_t));
+	memset((void *)pte_pg, 0, PTRS_PER_PTE * sizeof(pte_t));
 	page = virt_to_page(pte_pg);
 	if (!pgtable_page_ctor(page)) {
 		__free_page(page);
