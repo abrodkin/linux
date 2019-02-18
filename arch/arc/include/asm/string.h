@@ -17,8 +17,4 @@
 
 #include <linux/types.h>
 
-#define __HAVE_ARCH_STRCHR
-
-extern char *strchr(const char *s, int c);
-
 #endif /* _ASM_ARC_STRING_H */
