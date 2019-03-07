@@ -74,13 +74,6 @@
 		#interrupt-cells = <1>;
 	};
 
-	idu_intc: idu-interrupt-controller {
-		compatible = "snps,archs-idu-intc";
-		interrupt-controller;
-		#interrupt-cells = <1>;
-		interrupt-parent = <&cpu_intc>;
-	};
-
 	arcpct: pct {
 		compatible = "snps,archs-pct";
 	};
@@ -103,7 +96,7 @@
 		compatible = "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
-		interrupt-parent = <&idu_intc>;
+		interrupt-parent = <&cpu_intc>;
 
 		ranges = <0x00000000 0xf0000000 0x10000000>;
 
@@ -132,7 +125,7 @@
 			compatible = "snps,dw-apb-uart";
 			reg = <0x5000 0x100>;
 			clock-frequency = <33330000>;
-			interrupts = <6>;
+			interrupts = <30>;
 			baud = <115200>;
 			reg-shift = <2>;
 			reg-io-width = <4>;
@@ -171,7 +164,7 @@
 			#interrupt-cells = <1>;
 			compatible = "snps,dwmac";
 			reg = <0x8000 0x2000>;
-			interrupts = <10>;
+			interrupts = <34>;
 			interrupt-names = "macirq";
 			phy-mode = "rgmii";
 			snps,pbl = <32>;
@@ -199,14 +192,14 @@
 		ohci@60000 {
 			compatible = "snps,hsdk-v1.0-ohci", "generic-ohci";
 			reg = <0x60000 0x100>;
-			interrupts = <15>;
+			interrupts = <39>;
 			dma-coherent;
 		};
 
 		ehci@40000 {
 			compatible = "snps,hsdk-v1.0-ehci", "generic-ehci";
 			reg = <0x40000 0x100>;
-			interrupts = <15>;
+			interrupts = <39>;
 			dma-coherent;
 		};
 
@@ -218,7 +211,7 @@
 			card-detect-delay = <200>;
 			clocks = <&mmcclk_biu>, <&mmcclk_ciu>;
 			clock-names = "biu", "ciu";
-			interrupts = <12>;
+			interrupts = <36>;
 			bus-width = <4>;
 			dma-coherent;
 		};
