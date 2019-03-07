@@ -211,7 +211,6 @@ config ARC_MCIP
 
 menuconfig ARC_CACHE
 	bool "Enable Cache Support"
-	default y
 
 if ARC_CACHE
 
