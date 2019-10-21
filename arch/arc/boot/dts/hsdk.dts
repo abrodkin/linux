@@ -22,7 +22,7 @@
 	#size-cells = <1>;
 
 	chosen {
-		bootargs = "earlycon=uart8250,mmio32,0xf0005000,115200n8 console=ttyS0,115200n8 debug print-fatal-signals=1";
+		bootargs = "earlycon=uart8250,mmio32,0xf0005000,115200n8 console=ttyS0,115200n8 debug print-fatal-signals=1 uio_pdrv_genirq.of_id=generic-uio";
 	};
 
 	aliases {
@@ -77,7 +77,7 @@
 	idu_intc: idu-interrupt-controller {
 		compatible = "snps,archs-idu-intc";
 		interrupt-controller;
-		#interrupt-cells = <1>;
+		#interrupt-cells = <2>;
 		interrupt-parent = <&cpu_intc>;
 	};
 
@@ -132,7 +132,7 @@
 			compatible = "snps,dw-apb-uart";
 			reg = <0x5000 0x100>;
 			clock-frequency = <33330000>;
-			interrupts = <6>;
+			interrupts = <6 4>;
 			baud = <115200>;
 			reg-shift = <2>;
 			reg-io-width = <4>;
@@ -171,7 +171,7 @@
 			#interrupt-cells = <1>;
 			compatible = "snps,dwmac";
 			reg = <0x8000 0x2000>;
-			interrupts = <10>;
+			interrupts = <10 4>;
 			interrupt-names = "macirq";
 			phy-mode = "rgmii";
 			snps,pbl = <32>;
@@ -203,14 +203,14 @@
 		ohci@60000 {
 			compatible = "snps,hsdk-v1.0-ohci", "generic-ohci";
 			reg = <0x60000 0x100>;
-			interrupts = <15>;
+			interrupts = <15 4>;
 			dma-coherent;
 		};
 
 		ehci@40000 {
 			compatible = "snps,hsdk-v1.0-ehci", "generic-ehci";
 			reg = <0x40000 0x100>;
-			interrupts = <15>;
+			interrupts = <15 4>;
 			dma-coherent;
 		};
 
@@ -222,10 +222,21 @@
 			card-detect-delay = <200>;
 			clocks = <&mmcclk_biu>, <&mmcclk_ciu>;
 			clock-names = "biu", "ciu";
-			interrupts = <12>;
+			interrupts = <12 4>;
 			bus-width = <4>;
 			dma-coherent;
 		};
+	};
+
+	uioEV: uio@0x00000000 {
+		compatible = "generic-uio";
+		reg = <	0x0 0x40000000 0x0 0x2000
+			0x0 0x42000000 0x0 0x80000
+			0x0 0x30000000 0x0 0x10000000
+			0x0 0x20000000 0x0 0x10000000>;
+		reg-names = "arconnect", "csm", "ev_shared_mem", "ev_code_mem";
+		interrupt-parent = <&idu_intc>;
+		interrupts = < 34 1 >; /* GPIO[2] from HAPS */
 	};
 
 	memory@80000000 {
