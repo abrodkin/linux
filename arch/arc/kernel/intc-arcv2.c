@@ -83,9 +83,11 @@ void arc_init_IRQ(void)
 		/*
 		 * Only mask cpu private IRQs here.
 		 * "common" interrupts are masked at IDU, otherwise it would
-		 * need to be unmasked at each cpu, with IPIs
+		 * need to be unmasked at each cpu, with IPIs.
+		 * In case of UP there's no IDU and so we have to take care
+		 * of all avaialble IRQ lines.
 		 */
-		if (i < FIRST_EXT_IRQ)
+		if ((!IS_ENABLED(CONFIG_SMP)) || (i < FIRST_EXT_IRQ))
 			write_aux_reg(AUX_IRQ_ENABLE, 0);
 	}
 
